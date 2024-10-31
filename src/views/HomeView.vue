@@ -10,6 +10,7 @@
       Tubemesh
     </v-btn>
     <v-btn @click="loadBunny" variant="elevated" class="mx-1"> Bunny </v-btn>
+    <WalletConnector />
   </v-toolbar>
   <v-container class="pa-0 ma-0">
     <v-row no-gutters>
@@ -42,11 +43,15 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import compas from "@/api/compas";
+import WalletConnector from '@/components/WalletConnector.vue'
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xeeeeee);
 
 export default {
+  components: {
+    WalletConnector
+  },
   data: () => ({
     dialog: {
       visible: false,
@@ -189,6 +194,7 @@ export default {
         this.addMesh(response.vertices, response.edges, response.faces);
       });
     },
+
   },
 
   mounted() {
