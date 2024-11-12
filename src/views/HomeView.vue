@@ -12,6 +12,7 @@
     <v-btn @click="loadBunny" variant="elevated" class="mx-1"> Bunny </v-btn>
     <WalletConnector />
   </v-toolbar>
+  <MintingStrategies />
   <v-container class="pa-0 ma-0">
     <v-row no-gutters>
       <v-col cols="12" class="pa-0 ma-0">
@@ -43,14 +44,16 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import compas from "@/api/compas";
-import WalletConnector from '@/components/WalletConnector.vue'
+import WalletConnector from "@/components/WalletConnector.vue";
+import MintingStrategies from "@/components/MintingStrategies.vue";
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xeeeeee);
 
 export default {
   components: {
-    WalletConnector
+    WalletConnector,
+    MintingStrategies,
   },
   data: () => ({
     dialog: {
@@ -194,7 +197,6 @@ export default {
         this.addMesh(response.vertices, response.edges, response.faces);
       });
     },
-
   },
 
   mounted() {
