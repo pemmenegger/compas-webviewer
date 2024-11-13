@@ -8,7 +8,6 @@ const provider = ref(null);
 const signer = ref(null);
 
 export function useWallet() {
-  
   const buttonText = computed(() => {
     return isConnected.value
       ? `${account.value.slice(0, 6)}...${account.value.slice(-4)}`
@@ -39,17 +38,17 @@ export function useWallet() {
   }
 
   function establishConnection(walletAddress) {
+    isConnected.value = true;
     account.value = walletAddress;
     provider.value = new ethers.providers.Web3Provider(window.ethereum);
     signer.value = provider.value.getSigner();
-    isConnected.value = true;
     localStorage.setItem("walletAutoConnect", "true");
     setupListeners();
 
+    // console.log("useWallet establishConnection: isConnected", isConnected.value);
     // console.log("useWallet establishConnection: account", account.value);
     // console.log("useWallet establishConnection: provider", provider.value);
     // console.log("useWallet establishConnection: signer", signer.value);
-    // console.log("useWallet establishConnection: isConnected", isConnected.value);
   }
 
   function disconnectWallet() {

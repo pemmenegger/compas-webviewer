@@ -21,39 +21,98 @@
           >
             Buy NFT via OpenSea
           </v-btn>
-          <p>ToDo: Buy NFT via COMPAS WebViewer</p>
+          <br />
+          <v-btn
+            href="https://testnets.opensea.io/assets/sepolia/0xb27fe598c87fb6e7e1ca440b2e08f001389a768d/0"
+            target="_blank"
+            variant="outlined"
+            color="primary"
+            size="small"
+          >
+            View NFT on OpenSea
+          </v-btn>
+          <p>Initial price set by contract owner through OpenSea listing.</p>
+          <p>No backend server or signatures required.</p>
         </td>
         <td>
           <v-btn
             v-if="isConnected"
             @click="lazyMintNFT"
-            variant="elevated"
-            class="mx-1"
+            variant="outlined"
+            color="primary"
+            size="small"
             :loading="isLoading"
           >
             Lazy Mint & Buy NFT via COMPAS WebViewer
           </v-btn>
-          <p v-else>Connect wallet to mint NFT</p>
+          <p v-else>Connect wallet to mint NFT.</p>
+          <br />
+          <v-btn
+            href="https://testnets.opensea.io/assets/sepolia/0x9262A74a9A3EDDdea8B40071409A1C596dFF1e0d/1"
+            target="_blank"
+            variant="outlined"
+            color="primary"
+            size="small"
+          >
+            View NFT on OpenSea
+          </v-btn>
+          <p>Initial price set via NFT voucher signatures by contract owner.</p>
+          <p>
+            No backend required: signatures can be hardcoded into this website.
+          </p>
         </td>
-        <td></td>
+        <td><v-checkbox></v-checkbox></td>
       </tr>
       <tr>
         <td>Door Frame</td>
         <td></td>
         <td></td>
-        <td></td>
+        <td><v-checkbox></v-checkbox></td>
       </tr>
       <tr>
         <td>Window</td>
         <td></td>
         <td></td>
-        <td></td>
+        <td><v-checkbox></v-checkbox></td>
       </tr>
       <tr>
         <td>Wall</td>
         <td></td>
         <td></td>
+        <td><v-checkbox></v-checkbox></td>
+      </tr>
+      <tr>
         <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <v-btn
+            v-if="isConnected"
+            @click="lazyMintNFT"
+            variant="outlined"
+            color="primary"
+            size="small"
+            :loading="isLoading"
+          >
+            Lazy Mint & Buy NFT via COMPAS WebViewer
+          </v-btn>
+          <p v-else>Connect wallet to mint NFT.</p>
+          <br />
+          <v-btn
+            href="https://testnets.opensea.io/assets/sepolia/0x9262A74a9A3EDDdea8B40071409A1C596dFF1e0d/2"
+            target="_blank"
+            variant="outlined"
+            color="primary"
+            size="small"
+          >
+            View NFT on OpenSea
+          </v-btn>
+          <p>Initial price set by contract owner via backend server.</p>
+          <p>
+            Backend required for price calculation and NFT voucher signatures.
+          </p>
+          <p>Alternative: users can pay what they want.</p>
+        </td>
       </tr>
     </tbody>
   </v-table>
@@ -72,29 +131,21 @@ export default {
 
   setup() {
     const isLoading = ref(false);
-    const contractAddress = "0xB27fE598C87FB6E7E1ca440B2E08f001389A768D";
+    const contractAddress = "0x9262A74a9A3EDDdea8B40071409A1C596dFF1e0d";
     let lazyMintService;
 
     watch(
       () => signer.value,
       (newSigner) => {
-        console.log("MintingStrategies watch: newSigner", newSigner);
         lazyMintService = new LazyMintService(contractAddress, newSigner);
-        console.log("lazyMintService", lazyMintService)
-
-      }
-    );
-
-    watch(
-      () => isConnected.value,
-      (newIsConnected) => {
-        console.log("newIsConnected ", newIsConnected);
       }
     );
 
     async function lazyMintNFT() {
       try {
-        console.log("lazyMintService", lazyMintService)
+        if (!lazyMintService) {
+          throw new Error("LazyMintService not set");
+        }
 
         isLoading.value = true;
 
@@ -104,15 +155,15 @@ export default {
           "ipfs://Qmdbb89D4KbjxKebHLpyQP1EvMKgE2JK2xXM267Vhjy6Tx";
 
         const voucher = {
-          tokenId: 99,
-          minPrice: ethers.utils.parseEther("0.01"), // Convert minprice to wei
+          tokenId: 2,
+          minPrice: ethers.utils.parseEther("0.000001"), // Convert minprice to wei
           uri: dummyDoorDataURI,
         };
 
         const domain = {
           name: "UmarPassportLazyMint",
           version: "1.0.0",
-          chainId: 31337,
+          chainId: 11155111,
           verifyingContract: contractAddress,
         };
 
@@ -123,14 +174,13 @@ export default {
             { name: "uri", type: "string" },
           ],
         };
-        const ownerPrivateKey = "";
+        const ownerPrivateKey =
+          "0x1656db30668e666855b314ea1c7fd6b1624d1396d92ac11883508d427c7cb43a";
         const owner = new ethers.Wallet(ownerPrivateKey);
         const signature = await owner._signTypedData(domain, types, voucher);
 
-        console.log("lazyMintService", lazyMintService)
-
         const tx = await lazyMintService.redeem(redeemer, voucher, signature);
-        console.log("Minting successful:", tx.hash);
+        console.log("Minting successful:", tx.blockHash);
       } catch (error) {
         console.error("Minting failed:", error);
       } finally {
