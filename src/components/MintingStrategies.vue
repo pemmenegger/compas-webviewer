@@ -1,5 +1,5 @@
 <template>
-  <v-table>
+  <!-- <v-table>
     <thead>
       <tr>
         <th>Component</th>
@@ -115,7 +115,7 @@
         </td>
       </tr>
     </tbody>
-  </v-table>
+  </v-table> -->
 </template>
 
 <script>

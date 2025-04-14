@@ -17,13 +17,13 @@ export default {
     return response.data;
   },
 
-  async loadTubemesh() {
-    let response = await axios.get(HOST + "/load_tubemesh");
+  async loadGemmaCurtain() {
+    let response = await axios.get(HOST + "/load_gemma_curtain");
     return response.data;
   },
 
-  async loadBunny() {
-    let response = await axios.get(HOST + "/load_bunny");
+  async loadCooper() {
+    let response = await axios.get(HOST + "/load_cooper");
     return response.data;
   },
 };

@@ -9,6 +9,7 @@ import compas
 from compas.geometry import Box
 from compas.datastructures import Mesh
 from compas.itertools import flatten
+from compas.geometry import centroid_points
 
 
 app = FastAPI()
@@ -37,6 +38,8 @@ class MeshOutput(BaseModel):
     faces: List[int]
     edges: List[int]
 
+def flatten_to_nested_matrix(matrix):
+    return [matrix[i:i+4] for i in range(0, 16, 4)]
 
 def mesh_to_vertices_edges_triangles(mesh: Mesh) -> MeshOutput:
     vertices, faces = mesh.to_vertices_and_faces()
@@ -65,17 +68,29 @@ async def version():
     return compas.__version__
 
 
-@app.get("/load_tubemesh")
-async def load_tubemesh() -> MeshOutput:
-    mesh = Mesh.from_obj(compas.get("tubemesh.obj"))
+@app.get("/load_gemma_curtain")
+async def load_gemma_curtain() -> MeshOutput:
+    mesh = Mesh.from_obj("./data/gemma_curtain.obj")
+
+    vertices = [mesh.vertex_coordinates(key) for key in mesh.vertices()]
+    center = centroid_points(vertices)
+
+    translation_vector = [-center[0] - 2, -center[1], -center[2]]
+    mesh.translate(translation_vector)
+
     return mesh_to_vertices_edges_triangles(mesh)
 
 
-@app.get("/load_bunny")
-async def load_bunny() -> MeshOutput:
-    mesh = Mesh.from_ply(compas.get("bunny.ply"))
-    mesh.rotate(3.14159 / 2, [1, 0, 0])
-    mesh.scale(30)
+@app.get("/load_cooper")
+async def load_cooper() -> MeshOutput:
+    mesh = Mesh.from_obj("./data/cooper.obj")
+
+    vertices = [mesh.vertex_coordinates(key) for key in mesh.vertices()]
+    center = centroid_points(vertices)
+
+    translation_vector = [-center[0] + 2, -center[1], -center[2]]
+    mesh.translate(translation_vector)
+
     return mesh_to_vertices_edges_triangles(mesh)
 
 

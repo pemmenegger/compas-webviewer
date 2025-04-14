@@ -6,10 +6,10 @@
     <v-btn @click="boxToSubdividedMesh" variant="elevated" class="mx-1">
       Getting Started
     </v-btn>
-    <v-btn @click="loadTubemesh" variant="elevated" class="mx-1">
-      Tubemesh
+    <v-btn @click="loadGemmaCurtain" variant="elevated" class="mx-1">
+      Gemma Curtain
     </v-btn>
-    <v-btn @click="loadBunny" variant="elevated" class="mx-1"> Bunny </v-btn>
+    <v-btn @click="loadCooper" variant="elevated" class="mx-1"> Cooper </v-btn>
     <WalletConnector />
   </v-toolbar>
   <MintingStrategies />
@@ -77,6 +77,10 @@ export default {
         colorGrid: 0xbfbfbf,
       },
     },
+    camera: null,
+    raycaster: new THREE.Raycaster(),
+    mouse: new THREE.Vector2(),
+    selectableMeshes: [],
   }),
 
   methods: {
@@ -94,6 +98,7 @@ export default {
       camera.up.set(0, 0, 1);
       camera.position.set(0, -7, 7);
       camera.lookAt(0, 0, 0);
+      this.camera = camera;
 
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -104,9 +109,10 @@ export default {
         renderer.render(scene, camera);
       });
 
-      document
-        .getElementById("three-container")
-        .appendChild(renderer.domElement);
+      const container = document.getElementById("three-container");
+      container.appendChild(renderer.domElement);
+      container.addEventListener("mousemove", this.onMouseMove, false);
+      container.addEventListener("click", this.onMeshClick, false);
 
       const controls = new OrbitControls(camera, renderer.domElement);
     },
@@ -115,6 +121,8 @@ export default {
       const geometry = new THREE.BoxGeometry(1, 1, 1);
       const material = new THREE.MeshBasicMaterial({ color: 0xcccccc });
       const cube = new THREE.Mesh(geometry, material);
+      cube.userData.interactive = true;
+      this.selectableMeshes.push(cube);
       const edges = new THREE.EdgesGeometry(geometry);
       const line = new THREE.LineSegments(
         edges,
@@ -142,7 +150,6 @@ export default {
 
     addMesh(vertices, edges, faces) {
       const positions = new THREE.Float32BufferAttribute(vertices, 3);
-
       const meshgeometry = new THREE.BufferGeometry();
       meshgeometry.setAttribute("position", positions);
       meshgeometry.setIndex(faces);
@@ -151,6 +158,8 @@ export default {
         side: THREE.DoubleSide,
       });
       const mesh = new THREE.Mesh(meshgeometry, meshmaterial);
+      mesh.userData.interactive = true;
+      this.selectableMeshes.push(mesh);
 
       const linegeometry = new THREE.BufferGeometry();
       linegeometry.setAttribute("position", positions);
@@ -162,6 +171,40 @@ export default {
       scene.add(line);
     },
 
+    onMouseMove(event) {
+      const containerRect = event.target.getBoundingClientRect();
+      this.mouse.x =
+        ((event.clientX - containerRect.left) / containerRect.width) * 2 - 1;
+      this.mouse.y =
+        -((event.clientY - containerRect.top) / containerRect.height) * 2 + 1;
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      const intersects = this.raycaster.intersectObjects(this.selectableMeshes);
+      if (intersects.length > 0) {
+        const mesh = intersects[0].object;
+        mesh.material.color.set(0xff0000);
+        event.target.style.cursor = "pointer";
+      } else {
+        this.selectableMeshes.forEach((mesh) => {
+          mesh.material.color.set(0xcccccc);
+        });
+        event.target.style.cursor = "default";
+      }
+    },
+
+    onMeshClick(event) {
+      const containerRect = event.target.getBoundingClientRect();
+      this.mouse.x =
+        ((event.clientX - containerRect.left) / containerRect.width) * 2 - 1;
+      this.mouse.y =
+        -((event.clientY - containerRect.top) / containerRect.height) * 2 + 1;
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      const intersects = this.raycaster.intersectObjects(this.selectableMeshes);
+      if (intersects.length > 0) {
+        const mesh = intersects[0].object;
+        this.showDialog("Mesh Clicked", "You clicked on a mesh!");
+      }
+    },
+
     showDialog(title, text) {
       this.dialog.visible = true;
       this.dialog.title = title;
@@ -170,7 +213,6 @@ export default {
 
     ping() {
       compas.ping().then((response) => {
-        // console.log(response);
         this.showDialog("Info", `ping says: ${response}`);
       });
     },
@@ -179,21 +221,18 @@ export default {
       compas
         .boxToSubdividedMesh({ xsize: 1, ysize: 1, zsize: 1 })
         .then((response) => {
-          // console.log(response);
           this.addMesh(response.vertices, response.edges, response.faces);
         });
     },
 
-    loadTubemesh() {
-      compas.loadTubemesh().then((response) => {
-        // console.log(response);
+    loadGemmaCurtain() {
+      compas.loadGemmaCurtain().then((response) => {
         this.addMesh(response.vertices, response.edges, response.faces);
       });
     },
 
-    loadBunny() {
-      compas.loadBunny().then((response) => {
-        // console.log(response);
+    loadCooper() {
+      compas.loadCooper().then((response) => {
         this.addMesh(response.vertices, response.edges, response.faces);
       });
     },
